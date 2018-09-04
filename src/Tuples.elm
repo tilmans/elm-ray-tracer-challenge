@@ -26,15 +26,11 @@ vector x y z =
 
 
 equals a b =
-    (a.x
-        == b.x
-    )
-        && (a.y
-                == b.y
-           )
-        && (a.z
-                == b.z
-           )
-        && (a.w
-                == b.w
-           )
+    floatEquals a.x b.x
+        && floatEquals a.y b.y
+        && floatEquals a.z b.z
+        && floatEquals a.w b.w
+
+
+floatEquals a b =
+    abs (a - b) < 0.00000001
