@@ -2,8 +2,8 @@ module Example exposing (suite)
 
 import Expect exposing (Expectation, FloatingPointTolerance(..))
 import Fuzz exposing (Fuzzer, int, list, string)
-import Render exposing (Tuple)
 import Test exposing (..)
+import Tuples exposing (Tuple)
 
 
 floatEquals =
@@ -24,8 +24,8 @@ suite =
                     , .y >> floatEquals -4.2
                     , .z >> floatEquals 3.1
                     , .w >> floatEquals 1.0
-                    , Render.isPoint >> Expect.true "is point"
-                    , Render.isVector >> Expect.false "is not vector"
+                    , Tuples.isPoint >> Expect.true "is point"
+                    , Tuples.isVector >> Expect.false "is not vector"
                     ]
                     tuple
         , test "with w=0 is a vector" <|
@@ -39,8 +39,18 @@ suite =
                     , .y >> floatEquals -4.2
                     , .z >> floatEquals 3.1
                     , .w >> floatEquals 0.0
-                    , Render.isPoint >> Expect.false "is not point"
-                    , Render.isVector >> Expect.true "is vector"
+                    , Tuples.isPoint >> Expect.false "is not point"
+                    , Tuples.isVector >> Expect.true "is vector"
                     ]
                     tuple
+        , test "point describes tuple with w=1" <|
+            \_ ->
+                Tuples.point 4 -4 3
+                    |> Tuples.equals (Tuple 4 -4 3 1.0)
+                    |> Expect.true "point creates a point"
+        , test "vector describes tuple with w=0" <|
+            \_ ->
+                Tuples.vector 4 -4 3
+                    |> Tuples.equals (Tuple 4 -4 3 0.0)
+                    |> Expect.true "vector creates a vector"
         ]
