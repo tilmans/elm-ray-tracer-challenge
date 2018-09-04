@@ -16,6 +16,8 @@ module Tuples exposing
     , vector
     )
 
+import Utility exposing (floatEquals)
+
 
 type alias Tuple =
     { x : Float
@@ -127,8 +129,3 @@ equals a b =
         && floatEquals a.y b.y
         && floatEquals a.z b.z
         && floatEquals a.w b.w
-
-
-floatEquals : Float -> Float -> Bool
-floatEquals a b =
-    abs (a - b) < 0.00001
