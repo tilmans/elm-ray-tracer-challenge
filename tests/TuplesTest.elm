@@ -101,4 +101,102 @@ suite =
                 Tuples.subtract v1 v2
                     |> Tuples.equals (Tuples.vector -2 -4 -6)
                     |> Expect.true "subtracts correctly"
+        , test "negate a tuple" <|
+            \_ ->
+                Tuple 1 -2 3 -4
+                    |> Tuples.negate
+                    |> Tuples.equals (Tuple -1 2 -3 4)
+                    |> Expect.true "negates correctly"
+        , test "multiply with scalar" <|
+            \_ ->
+                Tuple 1 -2 3 -4
+                    |> Tuples.multiply 3.5
+                    |> Tuples.equals (Tuple 3.5 -7 10.5 -14)
+                    |> Expect.true "negates correctly"
+        , test "multiply with fraction" <|
+            \_ ->
+                Tuple 1 -2 3 -4
+                    |> Tuples.multiply 0.5
+                    |> Tuples.equals (Tuple 0.5 -1 1.5 -2)
+                    |> Expect.true "negates correctly"
+        , test "divide with scalar" <|
+            \_ ->
+                Tuple 1 -2 3 -4
+                    |> Tuples.divide 2
+                    |> Tuples.equals (Tuple 0.5 -1 1.5 -2)
+                    |> Expect.true "negates correctly"
+        , test "magnitude 1 right" <|
+            \_ ->
+                Tuples.vector 1 0 0
+                    |> Tuples.magnitude
+                    |> floatEquals 1
+        , test "magnitude 1 up" <|
+            \_ ->
+                Tuples.vector 0 1 0
+                    |> Tuples.magnitude
+                    |> floatEquals 1
+        , test "magnitude 1 back" <|
+            \_ ->
+                Tuples.vector 0 0 1
+                    |> Tuples.magnitude
+                    |> floatEquals 1
+        , test "magnitude free" <|
+            \_ ->
+                Tuples.vector 1 2 3
+                    |> Tuples.magnitude
+                    |> floatEquals (sqrt 14)
+        , test "magnitude free negative" <|
+            \_ ->
+                Tuples.vector -1 -2 -3
+                    |> Tuples.magnitude
+                    |> floatEquals (sqrt 14)
+        , test "normalizing 4 0 0 gives 1 0 0" <|
+            \_ ->
+                Tuples.vector 4 0 0
+                    |> Tuples.normalize
+                    |> Tuples.equals (Tuples.vector 1 0 0)
+                    |> Expect.true "normalized correctly"
+        , test "normalizing 1 2 3" <|
+            \_ ->
+                Tuples.vector 1 2 3
+                    |> Tuples.normalize
+                    |> Tuples.equals (Tuples.vector 0.26726 0.53452 0.80178)
+                    |> Expect.true "normalized correctly"
+        , test "magnitude of normal vector" <|
+            \_ ->
+                Tuples.vector 4 0 0
+                    |> Tuples.normalize
+                    |> Tuples.magnitude
+                    |> floatEquals 1
+        , test "dot product" <|
+            \_ ->
+                let
+                    a =
+                        Tuples.vector 1 2 3
+
+                    b =
+                        Tuples.vector 2 3 4
+                in
+                Tuples.dot a b
+                    |> floatEquals 20
+        , test "cross product" <|
+            \_ ->
+                let
+                    v1 =
+                        Tuples.vector 1 2 3
+
+                    v2 =
+                        Tuples.vector 2 3 4
+                in
+                Expect.all
+                    [ \( a, b ) ->
+                        Tuples.cross a b
+                            |> Tuples.equals (Tuples.vector -1 2 -1)
+                            |> Expect.true "incorrect cross"
+                    , \( a, b ) ->
+                        Tuples.cross b a
+                            |> Tuples.equals (Tuples.vector 1 -2 1)
+                            |> Expect.true "incorrect cross"
+                    ]
+                    ( v1, v2 )
         ]
