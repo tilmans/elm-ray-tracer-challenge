@@ -1,6 +1,7 @@
 module Color exposing
     ( Color
     , add
+    , black
     , colorMultiply
     , equals
     , multiply
@@ -15,6 +16,11 @@ type alias Color =
     , green : Float
     , blue : Float
     }
+
+
+black : Color
+black =
+    Color 0.0 0.0 0.0
 
 
 add : Color -> Color -> Color
