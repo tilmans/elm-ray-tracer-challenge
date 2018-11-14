@@ -1,4 +1,15 @@
-module Matrix exposing (M2x2, M3x3, M4x4, m2x2, m3x3, m4x4, m4x4Equal, m4x4Multiply)
+module Matrix exposing
+    ( M2x2
+    , M3x3
+    , M4x4
+    , identity4x4
+    , m2x2
+    , m3x3
+    , m4x4
+    , m4x4Equal
+    , m4x4Multiply
+    , transpose4x4
+    )
 
 import Array exposing (Array)
 import Utility exposing (..)
@@ -50,6 +61,10 @@ type alias M4x4 =
     , m32 : Float
     , m33 : Float
     }
+
+
+identity4x4 =
+    M4x4 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1
 
 
 m2x2 : List (List Float) -> Maybe M2x2
@@ -104,6 +119,26 @@ m4x4 values =
 
     else
         Just (createm4 values)
+
+
+transpose4x4 : M4x4 -> M4x4
+transpose4x4 a =
+    M4x4 a.m00
+        a.m10
+        a.m20
+        a.m30
+        a.m01
+        a.m11
+        a.m21
+        a.m31
+        a.m02
+        a.m12
+        a.m22
+        a.m32
+        a.m03
+        a.m13
+        a.m23
+        a.m33
 
 
 m2x2Equal : M2x2 -> M2x2 -> Bool

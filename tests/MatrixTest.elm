@@ -153,4 +153,62 @@ suite =
                                         m4x4Multiply a b
                                             |> m4x4Equal r
                                             |> Expect.true "Should match"
+        , test "Multiply identity" <|
+            \_ ->
+                let
+                    ma =
+                        m4x4
+                            [ [ 0, 1, 2, 4 ]
+                            , [ 1, 2, 4, 8 ]
+                            , [ 2, 4, 8, 16 ]
+                            , [ 4, 8, 16, 32 ]
+                            ]
+                in
+                case ma of
+                    Nothing ->
+                        fail "Unexpected error creating matrix"
+
+                    Just a ->
+                        m4x4Multiply a identity4x4
+                            |> m4x4Equal a
+                            |> Expect.true "Should match"
+
+        -- TODO Page 76 - multiply identity with tuple (4)
+        , test "transpose matrix" <|
+            \_ ->
+                let
+                    ma =
+                        m4x4
+                            [ [ 0, 9, 3, 0 ]
+                            , [ 9, 8, 0, 8 ]
+                            , [ 1, 8, 5, 3 ]
+                            , [ 0, 0, 5, 8 ]
+                            ]
+
+                    mb =
+                        m4x4
+                            [ [ 0, 9, 1, 0 ]
+                            , [ 9, 8, 8, 0 ]
+                            , [ 3, 0, 5, 5 ]
+                            , [ 0, 8, 3, 8 ]
+                            ]
+                in
+                case ma of
+                    Nothing ->
+                        fail "Unexpected error creating matrix"
+
+                    Just a ->
+                        case mb of
+                            Nothing ->
+                                fail "Unexpected error creating matrix"
+
+                            Just b ->
+                                transpose4x4 a
+                                    |> m4x4Equal b
+                                    |> Expect.true "Should match"
+        , test "transpose identity" <|
+            \_ ->
+                transpose4x4 identity4x4
+                    |> m4x4Equal identity4x4
+                    |> Expect.true "Should match"
         ]
