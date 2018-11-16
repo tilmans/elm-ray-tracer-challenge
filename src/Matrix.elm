@@ -1,18 +1,25 @@
 module Matrix exposing
-    ( M2x2
-    , M3x3
-    , M4x4
+    ( Matrix(..)
+    , cofactor
+    , determinant
+    , equal
     , identity4x4
-    , m2x2
-    , m3x3
-    , m4x4
-    , m4x4Equal
-    , m4x4Multiply
-    , transpose4x4
+    , matrix
+    , minor
+    , multiply
+    , submatrix
+    , transpose
     )
 
 import Array exposing (Array)
 import Utility exposing (..)
+
+
+type Matrix
+    = M44 M4x4
+    | M33 M3x3
+    | M22 M2x2
+    | Illegal
 
 
 type alias M2x2 =
@@ -64,81 +71,162 @@ type alias M4x4 =
 
 
 identity4x4 =
-    M4x4 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1
+    matrix
+        [ [ 1, 0, 0, 0 ]
+        , [ 0, 1, 0, 0 ]
+        , [ 0, 0, 1, 0 ]
+        , [ 0, 0, 0, 1 ]
+        ]
 
 
-m2x2 : List (List Float) -> Maybe M2x2
-m2x2 values =
-    if List.length values /= 2 then
-        Nothing
+matrix : List (List Float) -> Matrix
+matrix values =
+    case List.length values of
+        2 ->
+            if sublength 2 values /= 0 then
+                Illegal
 
-    else if
-        (values
-            |> List.filter (\a -> List.length a /= 2)
-            |> List.length
-        )
-            > 0
-    then
-        Nothing
+            else
+                M22 <| createm2 values
+
+        3 ->
+            if sublength 3 values /= 0 then
+                Illegal
+
+            else
+                M33 <| createm3 values
+
+        4 ->
+            if sublength 4 values /= 0 then
+                Illegal
+
+            else
+                M44 <| createm4 values
+
+        _ ->
+            Illegal
+
+
+sublength target values =
+    values
+        |> List.filter (\a -> List.length a /= target)
+        |> List.length
+
+
+transpose : Matrix -> Matrix
+transpose ma =
+    case ma of
+        M44 a ->
+            matrix
+                [ [ a.m00, a.m10, a.m20, a.m30 ]
+                , [ a.m01, a.m11, a.m21, a.m31 ]
+                , [ a.m02, a.m12, a.m22, a.m32 ]
+                , [ a.m03, a.m13, a.m23, a.m33 ]
+                ]
+
+        _ ->
+            Illegal
+
+
+equal : Matrix -> Matrix -> Bool
+equal ma mb =
+    case ma of
+        M22 a ->
+            case mb of
+                M22 b ->
+                    m2x2Equal a b
+
+                _ ->
+                    False
+
+        M33 a ->
+            case mb of
+                M33 b ->
+                    m3x3Equal a b
+
+                _ ->
+                    False
+
+        M44 a ->
+            case mb of
+                M44 b ->
+                    m4x4Equal a b
+
+                _ ->
+                    False
+
+        Illegal ->
+            False
+
+
+minor : Int -> Int -> Matrix -> Float
+minor row col m =
+    submatrix row col m
+        |> determinant
+
+
+cofactor : Int -> Int -> Matrix -> Float
+cofactor row col m =
+    let
+        c =
+            minor row col m
+    in
+    if modBy 2 (row + col) == 1 then
+        c * -1
 
     else
-        Just (createm2 values)
+        c
 
 
-m3x3 : List (List Float) -> Maybe M3x3
-m3x3 values =
-    if List.length values /= 3 then
-        Nothing
-
-    else if
-        (values
-            |> List.filter (\a -> List.length a /= 3)
-            |> List.length
-        )
-            > 0
-    then
-        Nothing
-
-    else
-        Just (createm3 values)
+submatrix : Int -> Int -> Matrix -> Matrix
+submatrix row col m =
+    matrixToList m
+        |> removeAtIndex row
+        |> List.map (removeAtIndex col)
+        |> matrix
 
 
-m4x4 : List (List Float) -> Maybe M4x4
-m4x4 values =
-    if List.length values /= 4 then
-        Nothing
+matrixToList : Matrix -> List (List Float)
+matrixToList m =
+    case m of
+        M22 a ->
+            [ [ a.m00, a.m01 ]
+            , [ a.m10, a.m11 ]
+            ]
 
-    else if
-        (values
-            |> List.filter (\a -> List.length a /= 4)
-            |> List.length
-        )
-            > 0
-    then
-        Nothing
+        M33 a ->
+            [ [ a.m00, a.m01, a.m02 ]
+            , [ a.m10, a.m11, a.m12 ]
+            , [ a.m20, a.m21, a.m22 ]
+            ]
 
-    else
-        Just (createm4 values)
+        M44 a ->
+            [ [ a.m00, a.m01, a.m02, a.m03 ]
+            , [ a.m10, a.m11, a.m12, a.m13 ]
+            , [ a.m20, a.m21, a.m22, a.m23 ]
+            , [ a.m30, a.m31, a.m32, a.m33 ]
+            ]
+
+        _ ->
+            []
 
 
-transpose4x4 : M4x4 -> M4x4
-transpose4x4 a =
-    M4x4 a.m00
-        a.m10
-        a.m20
-        a.m30
-        a.m01
-        a.m11
-        a.m21
-        a.m31
-        a.m02
-        a.m12
-        a.m22
-        a.m32
-        a.m03
-        a.m13
-        a.m23
-        a.m33
+removeAtIndex : Int -> List a -> List a
+removeAtIndex index m =
+    let
+        ( _, result ) =
+            List.foldl
+                (\item ( i, l ) ->
+                    if i /= index then
+                        ( i + 1, l ++ [ item ] )
+
+                    else
+                        ( i + 1, l )
+                )
+                ( 0, [] )
+                m
+    in
+    result
 
 
 m2x2Equal : M2x2 -> M2x2 -> Bool
@@ -187,6 +275,42 @@ m4x4Equal a b =
         && floatEquals a.m31 b.m31
         && floatEquals a.m32 b.m32
         && floatEquals a.m33 b.m33
+
+
+determinant : Matrix -> Float
+determinant ma =
+    case ma of
+        M22 a ->
+            a.m00 * a.m11 - a.m01 * a.m10
+
+        M33 a ->
+            (a.m00 * cofactor 0 0 ma)
+                + (a.m01 * cofactor 0 1 ma)
+                + (a.m02 * cofactor 0 2 ma)
+
+        M44 a ->
+            (a.m00 * cofactor 0 0 ma)
+                + (a.m01 * cofactor 0 1 ma)
+                + (a.m02 * cofactor 0 2 ma)
+                + (a.m03 * cofactor 0 3 ma)
+
+        _ ->
+            0
+
+
+multiply : Matrix -> Matrix -> Matrix
+multiply ma mb =
+    case ma of
+        M44 a ->
+            case mb of
+                M44 b ->
+                    M44 <| m4x4Multiply a b
+
+                _ ->
+                    Illegal
+
+        _ ->
+            Illegal
 
 
 m4x4Multiply : M4x4 -> M4x4 -> M4x4

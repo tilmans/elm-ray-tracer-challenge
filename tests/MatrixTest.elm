@@ -28,55 +28,52 @@ suite =
         [ test "create and inspect 2x2" <|
             \_ ->
                 case
-                    m2x2
+                    matrix
                         [ [ -3, 5 ]
                         , [ 1, -2 ]
                         ]
                 of
-                    Nothing ->
-                        Expect.true "Can't construct matrix" False
-
-                    Just m2 ->
-                        m2
+                    M22 m ->
+                        m
                             |> Expect.all
                                 [ .m00 >> floatEquals -3
                                 , .m01 >> floatEquals 5
                                 , .m10 >> floatEquals 1
                                 , .m11 >> floatEquals -2
                                 ]
+
+                    _ ->
+                        fail "Can't construct matrix"
         , test "create and inspect 3x3" <|
             \_ ->
                 case
-                    m3x3
+                    matrix
                         [ [ -3, 5, 0 ]
                         , [ 1, -2, -7 ]
                         , [ 0, 1, 1 ]
                         ]
                 of
-                    Nothing ->
-                        Expect.true "Can't construct matrix" False
-
-                    Just m3 ->
+                    M33 m3 ->
                         m3
                             |> Expect.all
                                 [ .m00 >> floatEquals -3
                                 , .m11 >> floatEquals -2
                                 , .m22 >> floatEquals 1
                                 ]
+
+                    _ ->
+                        fail "Can't construct matrix"
         , test "create and inspect 4x4" <|
             \_ ->
                 case
-                    m4x4
+                    matrix
                         [ [ 1, 2, 3, 4 ]
                         , [ 5.5, 6.5, 7.5, 8.5 ]
                         , [ 9, 10, 11, 12 ]
                         , [ 13.5, 14.5, 15.5, 16.5 ]
                         ]
                 of
-                    Nothing ->
-                        Expect.true "Can't construct matrix" False
-
-                    Just m4 ->
+                    M44 m4 ->
                         m4
                             |> Expect.all
                                 [ .m00 >> floatEquals 1
@@ -87,128 +84,181 @@ suite =
                                 , .m30 >> floatEquals 13.5
                                 , .m32 >> floatEquals 15.5
                                 ]
+
+                    _ ->
+                        Expect.true "Can't construct matrix" False
         , test "equal matrices" <|
             \_ ->
-                let
-                    ma =
-                        m4x4 [ [ 1, 2, 3, 4 ], [ 2, 3, 4, 5 ], [ 3, 4, 5, 6 ], [ 4, 5, 6, 7 ] ]
-
-                    mb =
-                        m4x4 [ [ 1, 2, 3, 4 ], [ 2, 3, 4, 5 ], [ 3, 4, 5, 6 ], [ 4, 5, 6, 7 ] ]
-                in
-                case ma of
-                    Nothing ->
-                        fail "Unexpected issue creating matrix"
-
-                    Just a ->
-                        case mb of
-                            Nothing ->
-                                fail "Unexpected issue creating matrix"
-
-                            Just b ->
-                                Expect.true "Equality check is off" <|
-                                    m4x4Equal a b
-        , test "multiply 4x" <|
-            \_ ->
-                let
-                    ma =
-                        m4x4
+                Expect.true "Equality check is wrong" <|
+                    equal
+                        (matrix
                             [ [ 1, 2, 3, 4 ]
                             , [ 2, 3, 4, 5 ]
                             , [ 3, 4, 5, 6 ]
                             , [ 4, 5, 6, 7 ]
                             ]
-
-                    mb =
-                        m4x4
-                            [ [ 0, 1, 2, 4 ]
-                            , [ 1, 2, 4, 8 ]
-                            , [ 2, 4, 8, 16 ]
-                            , [ 4, 8, 16, 32 ]
+                        )
+                        (matrix
+                            [ [ 1, 2, 3, 4 ]
+                            , [ 2, 3, 4, 5 ]
+                            , [ 3, 4, 5, 6 ]
+                            , [ 4, 5, 6, 7 ]
                             ]
-
-                    mr =
-                        m4x4
+                        )
+        , test "multiply 4x" <|
+            \_ ->
+                multiply
+                    (matrix
+                        [ [ 1, 2, 3, 4 ]
+                        , [ 2, 3, 4, 5 ]
+                        , [ 3, 4, 5, 6 ]
+                        , [ 4, 5, 6, 7 ]
+                        ]
+                    )
+                    (matrix
+                        [ [ 0, 1, 2, 4 ]
+                        , [ 1, 2, 4, 8 ]
+                        , [ 2, 4, 8, 16 ]
+                        , [ 4, 8, 16, 32 ]
+                        ]
+                    )
+                    |> equal
+                        (matrix
                             [ [ 24, 49, 98, 196 ]
                             , [ 31, 64, 128, 256 ]
                             , [ 38, 79, 158, 316 ]
                             , [ 45, 94, 188, 376 ]
                             ]
-                in
-                case ma of
-                    Nothing ->
-                        fail "Unexpected error creating matrix"
-
-                    Just a ->
-                        case mb of
-                            Nothing ->
-                                fail "Unexpected error creating matrix"
-
-                            Just b ->
-                                case mr of
-                                    Nothing ->
-                                        fail "Unexpected error creating matrix"
-
-                                    Just r ->
-                                        m4x4Multiply a b
-                                            |> m4x4Equal r
-                                            |> Expect.true "Should match"
+                        )
+                    |> Expect.true "Should match"
         , test "Multiply identity" <|
             \_ ->
                 let
-                    ma =
-                        m4x4
+                    a =
+                        matrix
                             [ [ 0, 1, 2, 4 ]
                             , [ 1, 2, 4, 8 ]
                             , [ 2, 4, 8, 16 ]
                             , [ 4, 8, 16, 32 ]
                             ]
                 in
-                case ma of
-                    Nothing ->
-                        fail "Unexpected error creating matrix"
-
-                    Just a ->
-                        m4x4Multiply a identity4x4
-                            |> m4x4Equal a
-                            |> Expect.true "Should match"
+                multiply a identity4x4
+                    |> equal a
+                    |> Expect.true "Should match"
 
         -- TODO Page 76 - multiply identity with tuple (4)
         , test "transpose matrix" <|
             \_ ->
-                let
-                    ma =
-                        m4x4
-                            [ [ 0, 9, 3, 0 ]
-                            , [ 9, 8, 0, 8 ]
-                            , [ 1, 8, 5, 3 ]
-                            , [ 0, 0, 5, 8 ]
-                            ]
-
-                    mb =
-                        m4x4
+                transpose
+                    (matrix
+                        [ [ 0, 9, 3, 0 ]
+                        , [ 9, 8, 0, 8 ]
+                        , [ 1, 8, 5, 3 ]
+                        , [ 0, 0, 5, 8 ]
+                        ]
+                    )
+                    |> equal
+                        (matrix
                             [ [ 0, 9, 1, 0 ]
                             , [ 9, 8, 8, 0 ]
                             , [ 3, 0, 5, 5 ]
                             , [ 0, 8, 3, 8 ]
                             ]
-                in
-                case ma of
-                    Nothing ->
-                        fail "Unexpected error creating matrix"
-
-                    Just a ->
-                        case mb of
-                            Nothing ->
-                                fail "Unexpected error creating matrix"
-
-                            Just b ->
-                                transpose4x4 a
-                                    |> m4x4Equal b
-                                    |> Expect.true "Should match"
+                        )
+                    |> Expect.true "Should match"
         , test "transpose identity" <|
             \_ ->
-                transpose4x4 identity4x4
-                    |> m4x4Equal identity4x4
+                transpose identity4x4
+                    |> equal identity4x4
                     |> Expect.true "Should match"
+        , test "calculate det of 2x2" <|
+            \_ ->
+                matrix
+                    [ [ 1, 5 ]
+                    , [ -3, 2 ]
+                    ]
+                    |> determinant
+                    |> Expect.equal 17
+        , test "Submatrix of 3x3 is 2x2" <|
+            \_ ->
+                matrix
+                    [ [ 1, 5, 0 ]
+                    , [ -3, 2, 7 ]
+                    , [ 0, 6, -3 ]
+                    ]
+                    |> submatrix 0 2
+                    |> equal
+                        (matrix
+                            [ [ -3, 2 ]
+                            , [ 0, 6 ]
+                            ]
+                        )
+                    |> Expect.true "Does not match"
+        , test "Submatrix of 4x4 is 3x3" <|
+            \_ ->
+                matrix
+                    [ [ -6, 1, 1, 6 ]
+                    , [ -8, 5, 8, 6 ]
+                    , [ -1, 0, 8, 2 ]
+                    , [ -7, 1, -1, 1 ]
+                    ]
+                    |> submatrix 2 1
+                    |> equal
+                        (matrix
+                            [ [ -6, 1, 6 ]
+                            , [ -8, 8, 6 ]
+                            , [ -7, -1, 1 ]
+                            ]
+                        )
+                    |> Expect.true "Does not match"
+        , test "Minor of 3x3" <|
+            \_ ->
+                matrix
+                    [ [ 3, 5, 0 ]
+                    , [ 2, -1, -7 ]
+                    , [ 6, -7, 5 ]
+                    ]
+                    |> minor 1 0
+                    |> Expect.equal 25
+        , test "Cofactor of 3x3" <|
+            \_ ->
+                matrix
+                    [ [ 3, 5, 0 ]
+                    , [ 2, -1, -7 ]
+                    , [ 6, -1, 5 ]
+                    ]
+                    |> Expect.all
+                        [ minor 0 0 >> Expect.equal -12
+                        , cofactor 0 0 >> Expect.equal -12
+                        , minor 1 0 >> Expect.equal 25
+                        , cofactor 1 0 >> Expect.equal -25
+                        ]
+        , test "Determinant of 3x3" <|
+            \_ ->
+                matrix
+                    [ [ 1, 2, 6 ]
+                    , [ -5, 8, -4 ]
+                    , [ 2, 6, 4 ]
+                    ]
+                    |> Expect.all
+                        [ cofactor 0 0 >> Expect.equal 56
+                        , cofactor 0 1 >> Expect.equal 12
+                        , cofactor 0 2 >> Expect.equal -46
+                        , determinant >> Expect.equal -196
+                        ]
+        , test "Determinant of 4x4" <|
+            \_ ->
+                matrix
+                    [ [ -2, -8, 3, 5 ]
+                    , [ -3, 1, 7, 3 ]
+                    , [ 1, 2, -9, 6 ]
+                    , [ -6, 7, 7, -9 ]
+                    ]
+                    |> Expect.all
+                        [ cofactor 0 0 >> Expect.equal 690
+                        , cofactor 0 1 >> Expect.equal 447
+                        , cofactor 0 2 >> Expect.equal 210
+                        , cofactor 0 3 >> Expect.equal 51
+                        , determinant >> Expect.equal -4071
+                        ]
         ]
