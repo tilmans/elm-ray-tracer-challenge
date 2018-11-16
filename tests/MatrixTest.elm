@@ -261,4 +261,67 @@ suite =
                         , cofactor 0 3 >> Expect.equal 51
                         , determinant >> Expect.equal -4071
                         ]
+        , test "Check if invertible - yes" <|
+            \_ ->
+                let
+                    inv =
+                        matrix
+                            [ [ 6, 4, 4, 4 ]
+                            , [ 5, 5, 7, 6 ]
+                            , [ 4, -9, 3, -7 ]
+                            , [ 9, 1, 7, -6 ]
+                            ]
+                            |> invert
+                in
+                case inv of
+                    Nothing ->
+                        fail "Should have result"
+
+                    Just _ ->
+                        Expect.true "Worked" True
+        , test "Check if invertible - no" <|
+            \_ ->
+                let
+                    inv =
+                        matrix
+                            [ [ -4, 2, -2, -3 ]
+                            , [ 9, 6, 2, 6 ]
+                            , [ 0, -5, 1, -5 ]
+                            , [ 0, 0, 0, 0 ]
+                            ]
+                            |> invert
+                in
+                case inv of
+                    Nothing ->
+                        Expect.true "Worked" True
+
+                    Just _ ->
+                        fail "Should not have result"
+        , test "Invert matrix" <|
+            \_ ->
+                let
+                    m =
+                        matrix
+                            [ [ -5, 2, 6, -8 ]
+                            , [ 1, -5, 1, 8 ]
+                            , [ 7, 7, -6, -7 ]
+                            , [ 1, -3, 7, 4 ]
+                            ]
+
+                    inv =
+                        invert m
+                in
+                case inv of
+                    Nothing ->
+                        fail "Should have result"
+
+                    Just a ->
+                        matrix
+                            [ [ 0.21805, 0.45113, 0.2406, -0.04511 ]
+                            , [ -0.80827, -1.45677, -0.44361, 0.52068 ]
+                            , [ -0.07895, -0.22368, -0.05263, 0.19737 ]
+                            , [ -0.52256, -0.81391, -0.30075, 0.30639 ]
+                            ]
+                            |> equal a
+                            |> Expect.true "Must be equal"
         ]

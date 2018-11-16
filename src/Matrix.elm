@@ -4,6 +4,7 @@ module Matrix exposing
     , determinant
     , equal
     , identity4x4
+    , invert
     , matrix
     , minor
     , multiply
@@ -296,6 +297,40 @@ determinant ma =
 
         _ ->
             0
+
+
+invert : Matrix -> Maybe Matrix
+invert m =
+    if determinant m == 0 then
+        Nothing
+
+    else
+        case m of
+            M44 a ->
+                let
+                    c =
+                        \row col -> cofactor row col m
+
+                    d =
+                        determinant m
+
+                    cof =
+                        matrix
+                            [ [ c 0 0, c 0 1, c 0 2, c 0 3 ]
+                            , [ c 1 0, c 1 1, c 1 2, c 1 3 ]
+                            , [ c 2 0, c 2 1, c 2 2, c 2 3 ]
+                            , [ c 3 0, c 3 1, c 3 2, c 3 3 ]
+                            ]
+                in
+                cof
+                    |> transpose
+                    |> matrixToList
+                    |> List.map (\row -> List.map (\col -> col / d) row)
+                    |> matrix
+                    |> Just
+
+            _ ->
+                Nothing
 
 
 multiply : Matrix -> Matrix -> Matrix
