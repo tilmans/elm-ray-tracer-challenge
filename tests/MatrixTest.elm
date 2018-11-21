@@ -3,6 +3,7 @@ module MatrixTest exposing (floatEquals, suite)
 import Expect exposing (Expectation, FloatingPointTolerance(..))
 import Matrix exposing (..)
 import Test exposing (..)
+import Tuples
 
 
 floatEquals =
@@ -131,6 +132,19 @@ suite =
                             ]
                         )
                     |> Expect.true "Should match"
+        , test "Multiply with tuple" <|
+            \_ ->
+                multiply
+                    (matrix
+                        [ [ 1, 2, 3, 4 ]
+                        , [ 2, 4, 4, 2 ]
+                        , [ 8, 6, 4, 1 ]
+                        , [ 0, 0, 0, 1 ]
+                        ]
+                    )
+                    (M41 (Tuples.point 1 2 3))
+                    |> equal (M41 (Tuples.point 18 24 33))
+                    |> Expect.true "The results should be equal"
         , test "Multiply identity" <|
             \_ ->
                 let
@@ -274,10 +288,10 @@ suite =
                             |> invert
                 in
                 case inv of
-                    Nothing ->
+                    Illegal ->
                         fail "Should have result"
 
-                    Just _ ->
+                    _ ->
                         Expect.true "Worked" True
         , test "Check if invertible - no" <|
             \_ ->
@@ -292,10 +306,10 @@ suite =
                             |> invert
                 in
                 case inv of
-                    Nothing ->
+                    Illegal ->
                         Expect.true "Worked" True
 
-                    Just _ ->
+                    _ ->
                         fail "Should not have result"
         , test "Invert matrix" <|
             \_ ->
@@ -311,17 +325,12 @@ suite =
                     inv =
                         invert m
                 in
-                case inv of
-                    Nothing ->
-                        fail "Should have result"
-
-                    Just a ->
-                        matrix
-                            [ [ 0.21805, 0.45113, 0.2406, -0.04511 ]
-                            , [ -0.80827, -1.45677, -0.44361, 0.52068 ]
-                            , [ -0.07895, -0.22368, -0.05263, 0.19737 ]
-                            , [ -0.52256, -0.81391, -0.30075, 0.30639 ]
-                            ]
-                            |> equal a
-                            |> Expect.true "Must be equal"
+                matrix
+                    [ [ 0.21805, 0.45113, 0.2406, -0.04511 ]
+                    , [ -0.80827, -1.45677, -0.44361, 0.52068 ]
+                    , [ -0.07895, -0.22368, -0.05263, 0.19737 ]
+                    , [ -0.52256, -0.81391, -0.30075, 0.30639 ]
+                    ]
+                    |> equal inv
+                    |> Expect.true "Must be equal"
         ]

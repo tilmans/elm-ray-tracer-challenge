@@ -13,6 +13,7 @@ module Matrix exposing
     )
 
 import Array exposing (Array)
+import Tuples exposing (Tuple)
 import Utility exposing (..)
 
 
@@ -20,6 +21,7 @@ type Matrix
     = M44 M4x4
     | M33 M3x3
     | M22 M2x2
+    | M41 Tuple
     | Illegal
 
 
@@ -152,6 +154,14 @@ equal ma mb =
             case mb of
                 M44 b ->
                     m4x4Equal a b
+
+                _ ->
+                    False
+
+        M41 a ->
+            case mb of
+                M41 b ->
+                    Tuples.equals a b
 
                 _ ->
                     False
@@ -299,10 +309,10 @@ determinant ma =
             0
 
 
-invert : Matrix -> Maybe Matrix
+invert : Matrix -> Matrix
 invert m =
     if determinant m == 0 then
-        Nothing
+        Illegal
 
     else
         case m of
@@ -327,10 +337,9 @@ invert m =
                     |> matrixToList
                     |> List.map (\row -> List.map (\col -> col / d) row)
                     |> matrix
-                    |> Just
 
             _ ->
-                Nothing
+                Illegal
 
 
 multiply : Matrix -> Matrix -> Matrix
@@ -341,11 +350,33 @@ multiply ma mb =
                 M44 b ->
                     M44 <| m4x4Multiply a b
 
+                M41 b ->
+                    M41 <| m4x1Multiply a b
+
                 _ ->
                     Illegal
 
         _ ->
             Illegal
+
+
+m4x1Multiply : M4x4 -> Tuple -> Tuple
+m4x1Multiply a b =
+    let
+        x =
+            (a.m00 * b.x) + (a.m01 * b.y) + (a.m02 * b.z) + (a.m03 * b.w)
+
+        y =
+            (a.m10 * b.x) + (a.m11 * b.y) + (a.m12 * b.z) + (a.m13 * b.w)
+
+        z =
+            (a.m20 * b.x) + (a.m21 * b.y) + (a.m22 * b.z) + (a.m23 * b.w)
+    in
+    if Tuples.isPoint b then
+        Tuples.point x y z
+
+    else
+        Tuples.vector x y z
 
 
 m4x4Multiply : M4x4 -> M4x4 -> M4x4
